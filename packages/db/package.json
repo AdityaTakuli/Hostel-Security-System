@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "seed": "tsx src/seed.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -16,6 +17,7 @@
     "typescript": "^5.4.0"
   },
   "dependencies": {
+    "dotenv": "^16.6.1",
     "mongoose": "^9.3.3"
   }
 }

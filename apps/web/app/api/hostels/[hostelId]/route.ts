@@ -33,11 +33,12 @@ export async function GET(
        return NextResponse.json({ error: 'Hostel not found' }, { status: 404 });
     }
 
-    const floors = hostel.floorList.map((floor: any) => {
-        const cameraCount = floor.cameras.length;
+    const floors = (hostel.floorList || []).map((floor: any) => {
+        const cameraCount = floor.cameras?.length || 0;
         let activeAlertCount = 0;
-        floor.cameras.forEach((cam: any) => {
-            activeAlertCount += cam.alerts.length;
+        
+        (floor.cameras || []).forEach((cam: any) => {
+            activeAlertCount += cam.alerts?.length || 0;
         });
 
         return {

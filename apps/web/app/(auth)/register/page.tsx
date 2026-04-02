@@ -1,16 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, Button, fadeInUp } from '@hostel-monitor/ui';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@hostel.com');
-  const [password, setPassword] = useState('password123');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,17 +19,24 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const res = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    if (res?.error) {
-      setError('Invalid credentials');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+
+      // Registration successful, redirect to login
+      router.push('/login');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
       setLoading(false);
-    } else {
-      router.push('/dashboard');
     }
   };
 
@@ -44,7 +51,7 @@ export default function LoginPage() {
         <Card variant="elevated" className="p-8 backdrop-blur-xl bg-surface-elevated/80 border-border">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-mono font-bold">SYSTEM_AUTH</h1>
-            <p className="text-text-secondary text-sm mt-2">Enter credentials to access control matrix</p>
+            <p className="text-text-secondary text-sm mt-2">Create a new operator account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -55,7 +62,18 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-xs font-mono text-text-secondary mb-2 uppercase">Operator ID</label>
+              <label className="block text-xs font-mono text-text-secondary mb-2 uppercase">Operator Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue transition-all"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-text-secondary mb-2 uppercase">Operator ID (Email)</label>
               <input
                 type="email"
                 value={email}
@@ -82,17 +100,14 @@ export default function LoginPage() {
               className="w-full h-12 font-mono uppercase tracking-widest glow-blue"
               loading={loading}
             >
-              Initialize Session
+              Initialize Account
             </Button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-border/50 text-center text-xs text-text-secondary">
-            UNAUTHORIZED ACCESS IS STRICTLY PROHIBITED
-            <div className="mt-4">
-              <Link href="/register" className="hover:text-accent-blue hover:underline transition-all">
-                REQUEST OPERATOR CLEARANCE (SIGN UP)
-              </Link>
-            </div>
+             <Link href="/login" className="hover:text-accent-blue hover:underline transition-all">
+                ALREADY AN OPERATOR? SIGN IN
+             </Link>
           </div>
         </Card>
       </motion.div>

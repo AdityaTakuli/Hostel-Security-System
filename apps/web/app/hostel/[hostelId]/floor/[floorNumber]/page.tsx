@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence } from 'framer-motion';
@@ -37,9 +37,10 @@ export default function FloorMapPage({ params }: { params: { hostelId: string, f
   });
 
   // Zustand stores for reactive UI
-  const activeAlertCamIds = useAlertStore(state => 
-     new Set(state.alerts.filter(a => a.hostelId === hostelId && a.floorNumber === num).map(a => a.cameraId))
-  );
+  const alerts = useAlertStore(state => state.alerts);
+  const activeAlertCamIds = React.useMemo(() => {
+     return new Set(alerts.filter(a => a.hostelId === hostelId && a.floorNumber === num).map(a => a.cameraId));
+  }, [alerts, hostelId, num]);
 
   useEffect(() => {
     fetch(`/api/hostels/${hostelId}/floors/${num}/cameras`)

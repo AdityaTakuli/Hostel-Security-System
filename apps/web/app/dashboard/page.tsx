@@ -8,6 +8,7 @@ import { Card, Badge, StatusDot, Button } from '@hostel-monitor/ui';
 import { useAlertStore } from '@/stores/alertStore';
 import { ALERT_TYPE_EMOJI, ALERT_TYPE_LABEL, SEVERITY_COLOR } from '@hostel-monitor/types';
 
+export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
   const { data: session } = useSession();

@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import AlertProvider from '@/components/providers/AlertProvider';
 
+import AuthProvider from '@/components/providers/AuthProvider';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -20,9 +22,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="absolute inset-0 bg-background overflow-y-auto">
           <div className="scanline-overlay pointer-events-none" />
-          <AlertProvider>
-            {children}
-          </AlertProvider>
+          <AuthProvider>
+            <AlertProvider>
+              {children}
+            </AlertProvider>
+          </AuthProvider>
         </div>
       </body>
     </html>

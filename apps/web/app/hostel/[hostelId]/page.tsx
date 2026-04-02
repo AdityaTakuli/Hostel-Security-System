@@ -34,6 +34,22 @@ export default function HostelPage({ params }: { params: { hostelId: string } })
       );
   }
 
+  if ('error' in hostel) {
+      return (
+          <div className="min-h-screen flex items-center justify-center">
+              <div className="text-alert-red font-mono font-bold">{(hostel as any).error}</div>
+          </div>
+      );
+  }
+
+  if (!hostel.floors) {
+      return (
+          <div className="min-h-screen flex items-center justify-center">
+              <div className="text-text-secondary font-mono">No floor data available.</div>
+          </div>
+      );
+  }
+
   return (
     <div className="min-h-screen p-8 pb-20 relative z-10">
       
