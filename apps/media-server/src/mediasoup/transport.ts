@@ -26,7 +26,7 @@ export async function createRecvTransport(
   clientId: string,
   workerIndex: number
 ): Promise<{
-  transportId: string;
+  id: string;
   iceParameters: mediasoupTypes.IceParameters;
   iceCandidates: mediasoupTypes.IceCandidate[];
   dtlsParameters: mediasoupTypes.DtlsParameters;
@@ -54,7 +54,7 @@ export async function createRecvTransport(
   console.info(`[transport] Created recv transport ${transport.id} for client ${clientId}`);
 
   return {
-    transportId: transport.id,
+    id: transport.id,
     iceParameters: transport.iceParameters,
     iceCandidates: transport.iceCandidates,
     dtlsParameters: transport.dtlsParameters,
@@ -205,7 +205,7 @@ export async function createSendTransport(
   clientId: string,
   workerIndex: number
 ): Promise<{
-  transportId: string;
+  id: string;
   iceParameters: mediasoupTypes.IceParameters;
   iceCandidates: mediasoupTypes.IceCandidate[];
   dtlsParameters: mediasoupTypes.DtlsParameters;
@@ -233,7 +233,7 @@ export async function createSendTransport(
   console.info(`[transport] Created send transport ${transport.id} for broadcaster ${clientId}`);
 
   return {
-    transportId: transport.id,
+    id: transport.id,
     iceParameters: transport.iceParameters,
     iceCandidates: transport.iceCandidates,
     dtlsParameters: transport.dtlsParameters,

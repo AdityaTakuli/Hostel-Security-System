@@ -37,56 +37,77 @@ export default function LandingPage() {
              {/* Abstract Grid background */}
              <div className="absolute inset-0 bg-[linear-gradient(rgba(124,58,237,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(124,58,237,0.1)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-             {/* System Use-Case Data Flow Diagram */}
-             <svg viewBox="0 0 500 500" className="w-full h-full text-white/40 drop-shadow-xl relative z-10" fill="none">
+             {/* System Use-Case Data Flow Diagram - Brutalist/Technical Style */}
+             <svg viewBox="0 0 600 400" className="w-full h-full text-white relative z-10" fill="none">
                 
-                {/* Horizontal Flow Lines */}
+                {/* Structural Background Lines */}
+                <path d="M150 100 L450 100 M150 200 L450 200 M150 300 L450 300" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                <path d="M300 0 L300 400" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+                {/* Data Flow Lines - Left */}
                 <motion.path 
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity, repeatType: "loop", repeatDelay: 1 }}
-                  d="M100 250 L250 250 M250 250 L400 250" 
-                  stroke="#C084FC" strokeWidth="2" strokeDasharray="4 8" 
+                  transition={{ duration: 1.5, ease: "linear", repeat: Infinity, repeatType: "loop" }}
+                  d="M120 80 L220 80 L220 200 L250 200 M120 200 L250 200 M120 320 L220 320 L220 200 L250 200" 
+                  stroke="#C084FC" strokeWidth="2" strokeDasharray="6 6" 
                 />
+                
+                {/* Data Flow Lines - Right */}
                 <motion.path 
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 2, ease: "easeInOut" }}
-                  d="M100 120 L250 250 M100 380 L250 250 M250 250 L400 120 M250 250 L400 380" 
-                  stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" 
+                  transition={{ duration: 1.5, ease: "linear", repeat: Infinity, repeatType: "loop", delay: 0.5 }}
+                  d="M350 200 L380 200 L380 80 L480 80 M350 200 L480 200 M350 200 L380 200 L380 320 L480 320" 
+                  stroke="#00E5FF" strokeWidth="2" strokeDasharray="6 6" 
                 />
 
                 {/* Left Side: Inputs */}
-                <g className="font-mono text-[9px] uppercase font-bold tracking-widest fill-black stroke-accent-violet">
-                  {/* Camera Array */}
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.1 }} x="50" y="95" width="50" height="50" strokeWidth="1" />
-                  <text x="75" y="124" fill="#fff" stroke="none" textAnchor="middle">ONVIF</text>
+                <g className="font-mono text-[10px] uppercase font-bold tracking-widest fill-black stroke-white">
+                  <motion.rect initial={{ scale: 0, x: -50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 0.1 }} x="20" y="60" width="100" height="40" strokeWidth="2" />
+                  <text x="70" y="84" fill="#fff" stroke="none" textAnchor="middle">ONVIF</text>
+                  <rect x="15" y="55" width="5" height="5" fill="#C084FC" stroke="none" />
                   
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }} x="50" y="225" width="50" height="50" strokeWidth="1" />
-                  <text x="75" y="254" fill="#fff" stroke="none" textAnchor="middle">RTSP</text>
+                  <motion.rect initial={{ scale: 0, x: -50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 0.2 }} x="20" y="180" width="100" height="40" strokeWidth="2" />
+                  <text x="70" y="204" fill="#fff" stroke="none" textAnchor="middle">RTSP</text>
+                  <rect x="15" y="175" width="5" height="5" fill="#C084FC" stroke="none" />
 
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }} x="50" y="355" width="50" height="50" strokeWidth="1" />
-                  <text x="75" y="384" fill="#fff" stroke="none" textAnchor="middle">HTTP FLV</text>
+                  <motion.rect initial={{ scale: 0, x: -50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 0.3 }} x="20" y="300" width="100" height="40" strokeWidth="2" />
+                  <text x="70" y="324" fill="#fff" stroke="none" textAnchor="middle">WEBCAM</text>
+                  <rect x="15" y="295" width="5" height="5" fill="#C084FC" stroke="none" />
                 </g>
 
                 {/* Central Brain: HMS Core */}
-                <motion.g initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.8 }}>
-                  <rect x="210" y="210" width="80" height="80" className="fill-black stroke-white stroke-[2]" />
-                  <line x1="210" y1="230" x2="290" y2="230" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <text x="250" y="260" fill="#fff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono tracking-widest">SFU Core</text>
-                  <circle cx="250" cy="250" r="60" stroke="#C084FC" strokeWidth="1" fill="none" opacity="0.4" className="animate-pulse" />
+                <motion.g initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', delay: 0.8 }} className="cursor-crosshair w-full">
+                  <rect x="250" y="150" width="100" height="100" className="fill-black stroke-accent-violet stroke-[3]" />
+                  
+                  {/* Decorative internal lines */}
+                  <line x1="250" y1="170" x2="350" y2="170" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                  <line x1="250" y1="230" x2="350" y2="230" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                  
+                  <text x="300" y="195" fill="#fff" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono tracking-tighter">HMS.SYS</text>
+                  <text x="300" y="215" fill="#C084FC" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono tracking-widest text-[#C084FC]">SFU CORE</text>
+                  
+                  {/* Four corner brutalist studs */}
+                  <rect x="246" y="146" width="8" height="8" fill="#fff" stroke="none" />
+                  <rect x="346" y="146" width="8" height="8" fill="#fff" stroke="none" />
+                  <rect x="246" y="246" width="8" height="8" fill="#fff" stroke="none" />
+                  <rect x="346" y="246" width="8" height="8" fill="#fff" stroke="none" />
                 </motion.g>
 
                 {/* Right Side: Outputs / Processing */}
-                <g className="font-mono text-[9px] uppercase font-bold tracking-widest fill-black stroke-accent-cyan">
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.1 }} x="400" y="95" width="50" height="50" strokeWidth="1" />
-                  <text x="425" y="124" fill="#fff" stroke="none" textAnchor="middle">TensorRT</text>
+                <g className="font-mono text-[10px] uppercase font-bold tracking-widest fill-black stroke-white">
+                  <motion.rect initial={{ scale: 0, x: 50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 1.1 }} x="480" y="60" width="100" height="40" strokeWidth="2" />
+                  <text x="530" y="84" fill="#fff" stroke="none" textAnchor="middle">INFERENCE</text>
+                  <rect x="580" y="55" width="5" height="5" fill="#00E5FF" stroke="none" />
                   
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.2 }} x="400" y="225" width="50" height="50" strokeWidth="1" className="stroke-white" />
-                  <text x="425" y="254" fill="#fff" stroke="none" textAnchor="middle">WebRTC</text>
+                  <motion.rect initial={{ scale: 0, x: 50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 1.2 }} x="480" y="180" width="100" height="40" strokeWidth="2" />
+                  <text x="530" y="204" fill="#fff" stroke="none" textAnchor="middle">WEBRTC</text>
+                  <rect x="580" y="175" width="5" height="5" fill="#00E5FF" stroke="none" />
 
-                  <motion.rect initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.3 }} x="400" y="355" width="50" height="50" strokeWidth="1" />
-                  <text x="425" y="384" fill="#fff" stroke="none" textAnchor="middle">DVR / S3</text>
+                  <motion.rect initial={{ scale: 0, x: 50 }} animate={{ scale: 1, x: 0 }} transition={{ type: "spring", delay: 1.3 }} x="480" y="300" width="100" height="40" strokeWidth="2" />
+                  <text x="530" y="324" fill="#fff" stroke="none" textAnchor="middle">DVR / S3</text>
+                  <rect x="580" y="295" width="5" height="5" fill="#00E5FF" stroke="none" />
                 </g>
              </svg>
              <div className="absolute top-4 left-4 border border-border bg-black px-3 py-1 text-[9px] uppercase tracking-widest text-accent-violet font-bold">

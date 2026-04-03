@@ -9,6 +9,7 @@ export function useWebcamProducer() {
   const { request, connected } = useSignaling();
   
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,8 +18,9 @@ export function useWebcamProducer() {
   const producerRef = useRef<Producer | null>(null);
 
   const stopWebcam = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
       setStream(null);
     }
     if (producerRef.current) {
@@ -31,7 +33,7 @@ export function useWebcamProducer() {
     }
     deviceRef.current = null;
     setIsPublishing(false);
-  }, [stream]);
+  }, []);
 
   // Clean up on unmount
   useEffect(() => {
@@ -51,6 +53,7 @@ export function useWebcamProducer() {
       
       // 1. Get webcam stream (Video only, per requirements)
       const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      streamRef.current = localStream;
       setStream(localStream);
       const videoTrack = localStream.getVideoTracks()[0];
 

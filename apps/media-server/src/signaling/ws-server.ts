@@ -112,6 +112,24 @@ async function handleJoinFloor(client: ClientState, msg: WSMessage): Promise<voi
 
   console.info(`[ws] Client ${client.clientId} joined ${key}`);
 
+  // Artificial global pool for dashboard broadcasts, skip DB lookup
+  if (hostelId === 'global') {
+    for (const [cameraId, entry] of producerMap.entries()) {
+      if (cameraId.startsWith('laptop_')) {
+        client.ws.send(
+          createMessage('PRODUCER_ADDED', {
+            producerId: entry.producer.id,
+            cameraId,
+            cameraLabel: 'Laptop Camera',
+            hostelId: 'global',
+            floorNumber: 0,
+          })
+        );
+      }
+    }
+    return;
+  }
+
   // Look up cameras on this floor
   await db.connectDB();
   const floor = await db.Floor.findOne({ hostelId, number: floorNumber }).populate('cameras');
@@ -190,7 +208,7 @@ async function handleCreateRecvTransport(client: ClientState, msg: WSMessage): P
   client.workerIndex = workerIndex;
 
   const params = await createRecvTransport(client.clientId, workerIndex);
-  client.transportId = params.transportId;
+  client.transportId = params.id;
 
   client.ws.send(createMessage('RECV_TRANSPORT_CREATED', params, msg.id));
 }
@@ -249,7 +267,7 @@ async function handleCreateSendTransport(client: ClientState, msg: WSMessage): P
   client.workerIndex = workerIndex;
 
   const params = await createSendTransport(client.clientId, workerIndex);
-  client.sendTransportId = params.transportId;
+  client.sendTransportId = params.id;
 
   client.ws.send(createMessage('SEND_TRANSPORT_CREATED', params, msg.id));
 }
@@ -283,6 +301,19 @@ async function handleProduce(client: ClientState, msg: WSMessage): Promise<void>
   });
 
   client.ws.send(createMessage('PRODUCED', { id: producer.id }, msg.id));
+
+  // Artificially broadcast to global pool so dashboard viewers can see the streams
+  broadcastToFloor(
+    'global',
+    0,
+    createMessage('PRODUCER_ADDED', {
+      producerId: producer.id,
+      cameraId,
+      cameraLabel: 'Laptop Camera',
+      hostelId: 'global',
+      floorNumber: 0,
+    })
+  );
 
   // Broadcast to all subscribed floors
   for (const floorKey of client.subscribedFloors) {

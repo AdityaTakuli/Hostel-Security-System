@@ -13,6 +13,7 @@ interface SFUOptions {
 
 interface SFUResult {
   getVideoTrack: (cameraId: string) => MediaStreamTrack | null;
+  activeCameraIds: string[];
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
 }
 
@@ -27,10 +28,11 @@ export function useSFU({ hostelId, floorNumber }: SFUOptions): SFUResult {
 
   // This state maps cameraId -> MediaStreamTrack, causing re-renders when tracks change
   const [tracks, setTracks] = useState<Map<string, MediaStreamTrack>>(new Map());
+  const [activeCameraIds, setActiveCameraIds] = useState<string[]>([]);
 
   // Main connection flow
   useEffect(() => {
-    if (!hostelId || !floorNumber || !connected) {
+    if (!hostelId || floorNumber == null || !connected) {
       return;
     }
 
@@ -114,7 +116,7 @@ export function useSFU({ hostelId, floorNumber }: SFUOptions): SFUResult {
 
   // Listener for PRODUCER_ADDED (Step 5)
   useEffect(() => {
-    if (!hostelId || !floorNumber) return;
+    if (!hostelId || floorNumber == null) return;
 
     const handleProducerAdded = async (payload: ProducerAddedPayload) => {
       // Validate this is for our floor
@@ -153,6 +155,7 @@ export function useSFU({ hostelId, floorNumber }: SFUOptions): SFUResult {
           next.set(payload.cameraId, consumer.track);
           return next;
         });
+        setActiveCameraIds(prev => Array.from(new Set([...prev, payload.cameraId])));
 
         // Resume consumer server-side
         sendMessage('RESUME_CONSUMER', { consumerId: params.consumerId });
@@ -183,6 +186,7 @@ export function useSFU({ hostelId, floorNumber }: SFUOptions): SFUResult {
         next.delete(payload.cameraId);
         return next;
       });
+      setActiveCameraIds(prev => prev.filter(id => id !== payload.cameraId));
     };
 
     const unsubscribe = subscribe('PRODUCER_REMOVED', handleProducerRemoved);
@@ -195,6 +199,7 @@ export function useSFU({ hostelId, floorNumber }: SFUOptions): SFUResult {
 
   return {
     getVideoTrack,
+    activeCameraIds,
     connectionStatus
   };
 }
