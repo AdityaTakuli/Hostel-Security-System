@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { User, Hostel, Floor, Camera, Alert, Role, AlertType, Severity } from './schema';
+import { User, Hostel, Floor, Camera, Alert, EventLog, Role, AlertType, Severity, AlarmMode } from './schema';
 
 export * from './schema';
 
@@ -49,6 +49,7 @@ export const db = {
   Floor,
   Camera,
   Alert,
+  EventLog,
   connectDB
 };
 

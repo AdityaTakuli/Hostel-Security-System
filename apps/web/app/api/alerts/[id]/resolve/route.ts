@@ -5,7 +5,7 @@ import { db } from '@hostel-monitor/db';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { alertId: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -14,11 +14,11 @@ export async function PATCH(
 
   try {
      await db.connectDB();
-     const alert = await db.Alert.findById(params.alertId);
+     const alert = await db.Alert.findById(params.id);
      if (!alert) return NextResponse.json({ error: 'Alert not found' }, { status: 404 });
 
      const updatedAlert = await db.Alert.findByIdAndUpdate(
-         params.alertId,
+         params.id,
          {
              resolved: true,
              resolvedBy: session.user?.name || session.user?.email || 'Unknown User',

@@ -17,6 +17,12 @@ export enum AlertType {
   ANIMAL_DOG = 'ANIMAL_DOG',
   UNAUTHORIZED_PERSON = 'UNAUTHORIZED_PERSON',
   WEAPON = 'WEAPON',
+  ANIMAL_INTRUSION = 'ANIMAL_INTRUSION',
+  LOITERING = 'LOITERING',
+  CROWD_SURGE = 'CROWD_SURGE',
+  TRESPASSING = 'TRESPASSING',
+  FOOD_INTRUSION = 'FOOD_INTRUSION',
+  FIRE_DETECTED = 'FIRE_DETECTED',
 }
 
 export enum Severity {
@@ -24,6 +30,12 @@ export enum Severity {
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
+}
+
+export enum AlarmMode {
+  ALWAYS_ON = 'always_on',
+  USER_CHOICE = 'user_choice',
+  ALWAYS_OFF = 'always_off',
 }
 
 // ============================================
@@ -134,6 +146,12 @@ FloorSchema.index({ hostelId: 1, number: 1 }, { unique: true });
 // ============================================
 // Camera Model
 // ============================================
+export interface IRestrictedZone {
+  label: string;
+  polygon: number[][];
+  isFullFrame: boolean;
+}
+
 export interface ICamera extends Document<string> {
   id: string;
   label: string;
@@ -143,6 +161,10 @@ export interface ICamera extends Document<string> {
   posY: number;
   isOnline: boolean;
   description?: string;
+  restrictedZones?: IRestrictedZone[];
+  alarmMode?: string;
+  surveillanceActive?: boolean;
+  lastSeenAt?: Date;
   alerts?: IAlert[]; // populated virtual
   floor?: IFloor;
 }
@@ -157,6 +179,14 @@ const CameraSchema = new Schema<ICamera>(
     posY: { type: Number, required: true },
     isOnline: { type: Boolean, default: true },
     description: { type: String },
+    restrictedZones: [{
+      label: { type: String },
+      polygon: { type: [[Number]] },
+      isFullFrame: { type: Boolean, default: false },
+    }],
+    alarmMode: { type: String, enum: Object.values(AlarmMode), default: AlarmMode.USER_CHOICE },
+    surveillanceActive: { type: Boolean, default: true },
+    lastSeenAt: { type: Date },
   },
   { toJSON, toObject }
 );
@@ -187,6 +217,13 @@ export interface IAlert extends Document<string> {
   resolvedBy?: string;
   createdAt: Date;
   resolvedAt?: Date;
+  frameSnapshot?: string;
+  boundingBox?: { x: number; y: number; w: number; h: number };
+  zone?: string;
+  actionTaken?: string;
+  read?: boolean;
+  detectedClass?: string;
+  confidence?: number;
   camera?: ICamera;
 }
 
@@ -202,6 +239,18 @@ const AlertSchema = new Schema<IAlert>(
     resolvedBy: { type: String },
     createdAt: { type: Date, default: Date.now },
     resolvedAt: { type: Date },
+    frameSnapshot: { type: String },
+    boundingBox: {
+      x: { type: Number },
+      y: { type: Number },
+      w: { type: Number },
+      h: { type: Number },
+    },
+    zone: { type: String },
+    actionTaken: { type: String },
+    read: { type: Boolean, default: false },
+    detectedClass: { type: String },
+    confidence: { type: Number },
   },
   { toJSON, toObject }
 );
@@ -214,6 +263,53 @@ AlertSchema.virtual('camera', {
 AlertSchema.index({ cameraId: 1 });
 AlertSchema.index({ createdAt: 1 });
 AlertSchema.index({ resolved: 1 });
+AlertSchema.index({ read: 1 });
+AlertSchema.index({ type: 1 });
+
+// ============================================
+// EventLog Model (ML Detection Events)
+// ============================================
+export interface IEventLog extends Document<string> {
+  id: string;
+  cameraId: string;
+  type: string;
+  riskLevel: string;
+  detectedClass: string;
+  confidence: number;
+  zone?: string;
+  timestamp: Date;
+  frameSnapshot?: string;
+  actionTaken?: string;
+  resolved: boolean;
+  boundingBox?: { x: number; y: number; w: number; h: number };
+}
+
+const EventLogSchema = new Schema<IEventLog>(
+  {
+    _id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
+    cameraId: { type: String, ref: 'Camera', required: true },
+    type: { type: String, required: true },
+    riskLevel: { type: String, enum: ['RED', 'YELLOW', 'GREEN'], default: 'YELLOW' },
+    detectedClass: { type: String, required: true },
+    confidence: { type: Number, required: true },
+    zone: { type: String },
+    timestamp: { type: Date, default: Date.now },
+    frameSnapshot: { type: String },
+    actionTaken: { type: String },
+    resolved: { type: Boolean, default: false },
+    boundingBox: {
+      x: { type: Number },
+      y: { type: Number },
+      w: { type: Number },
+      h: { type: Number },
+    },
+  },
+  { toJSON, toObject }
+);
+EventLogSchema.index({ cameraId: 1 });
+EventLogSchema.index({ timestamp: -1 });
+EventLogSchema.index({ type: 1 });
+EventLogSchema.index({ riskLevel: 1 });
 
 // ============================================
 // Initialize and Export Models
@@ -223,3 +319,4 @@ export const Hostel: Model<IHostel> = mongoose.models.Hostel || mongoose.model<I
 export const Floor: Model<IFloor> = mongoose.models.Floor || mongoose.model<IFloor>('Floor', FloorSchema, 'floors');
 export const Camera: Model<ICamera> = mongoose.models.Camera || mongoose.model<ICamera>('Camera', CameraSchema, 'cameras');
 export const Alert: Model<IAlert> = mongoose.models.Alert || mongoose.model<IAlert>('Alert', AlertSchema, 'alerts');
+export const EventLog: Model<IEventLog> = mongoose.models.EventLog || mongoose.model<IEventLog>('EventLog', EventLogSchema, 'eventlogs');

@@ -2,11 +2,15 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAlertStore } from '@/stores/alertStore';
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
+  const unreadCount = useAlertStore(state => state.unreadCount);
+  const markAllRead = useAlertStore(state => state.markAllRead);
 
   return (
     <nav className="w-full h-[60px] border-b border-white/20 bg-black flex justify-between items-center px-6 sticky top-0 z-50">
@@ -15,23 +19,45 @@ export default function Navbar() {
           <span className="font-bold text-xl tracking-tighter italic text-accent-violet">$h<span className="text-white">ms</span></span>
         </Link>
         
-        {/* Dynamic Breadcrumbs based on route */}
-        <div className="hidden sm:flex text-text-secondary text-[11px] uppercase tracking-widest gap-6 font-mono font-bold">
-          <span className="text-white">/ {pathname === '/' ? 'index' : pathname.replace('/', '')}</span>
-          {pathname !== '/' && pathname !== '/dashboard' && (
-             <Link href="/dashboard" className="hover:text-white transition-colors">/ Return to Grid</Link>
-          )}
+        {/* Main Navigation Links */}
+        <div className="hidden sm:flex h-[60px] items-center text-[11px] uppercase tracking-widest font-mono font-bold">
+          <Link 
+            href="/dashboard" 
+            className={`h-full px-6 flex items-center border-l border-white/20 transition-colors ${pathname === '/dashboard' ? 'bg-accent-violet text-black border-accent-violet' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+          >
+            Grid
+          </Link>
+          <Link 
+            href="/dashboard/heatmap" 
+            className={`h-full px-6 flex items-center border-l border-white/20 transition-colors ${pathname === '/dashboard/heatmap' ? 'bg-accent-violet text-black border-accent-violet' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+          >
+            Heatmap
+          </Link>
+          <Link 
+            href="/dashboard/alerts" 
+            className={`h-full px-6 flex items-center border-l border-white/20 transition-colors ${pathname === '/dashboard/alerts' ? 'bg-alert-red text-black border-alert-red' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+          >
+            Alerts
+          </Link>
         </div>
       </div>
 
       <div className="flex items-center gap-6 font-mono">
         {session ? (
           <>
-            <div className="relative group cursor-pointer flex items-center h-[60px] px-4 border-l border-r border-white/20 hover:bg-white/5 transition-colors">
+            <div
+              onClick={() => { markAllRead(); router.push('/dashboard/alerts'); }}
+              className="relative group cursor-pointer flex items-center h-[60px] px-4 border-l border-r border-white/20 hover:bg-white/5 transition-colors"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="text-text-secondary group-hover:text-white transition-colors">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
+              {unreadCount > 0 && (
+                <span className="absolute top-3 right-2.5 min-w-[16px] h-[16px] flex items-center justify-center bg-alert-red text-black text-[8px] font-bold px-1">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-4">

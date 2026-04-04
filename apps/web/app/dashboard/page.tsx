@@ -9,6 +9,7 @@ import { useAlertStore } from '@/stores/alertStore';
 import { ALERT_TYPE_EMOJI, ALERT_TYPE_LABEL, SEVERITY_COLOR } from '@hostel-monitor/types';
 import { useWebcamProducer } from '@/hooks/useWebcamProducer';
 import { useSFU } from '@/hooks/useSFU';
+import DetectionOverlay from '@/components/DetectionOverlay';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +92,7 @@ function VideoTile({ track, cameraId, index }: { track: MediaStreamTrack | null;
               backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255,255,255,0.1) 1px, rgba(255,255,255,0.1) 2px)',
               backgroundSize: '100% 2px'
             }} />
+            <DetectionOverlay cameraId={cameraId} width={640} height={480} />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 opacity-30">

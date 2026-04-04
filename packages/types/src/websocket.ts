@@ -28,7 +28,14 @@ export type WSMessageType =
   | 'CAMERA_STATUS'
   | 'PING'
   | 'PONG'
-  | 'ERROR';
+  | 'ERROR'
+  | 'BUZZER_CONTROL'
+  | 'SURVEILLANCE_TOGGLE'
+  | 'HEATMAP_UPDATE'
+  | 'WALKTHROUGH_STATUS'
+  | 'DETECTION_OVERLAY'
+  | 'ZONE_INTRUSION'
+  | 'ML_ALERT';
 
 /** Generic WebSocket message envelope */
 export interface WSMessage<T = unknown> {
@@ -205,7 +212,13 @@ export type AlertType =
   | 'ANIMAL_MONKEY'
   | 'ANIMAL_DOG'
   | 'UNAUTHORIZED_PERSON'
-  | 'WEAPON';
+  | 'WEAPON'
+  | 'ANIMAL_INTRUSION'
+  | 'LOITERING'
+  | 'CROWD_SURGE'
+  | 'TRESPASSING'
+  | 'FOOD_INTRUSION'
+  | 'FIRE_DETECTED';
 
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
@@ -220,6 +233,12 @@ export const ALERT_TYPE_EMOJI: Record<AlertType, string> = {
   ANIMAL_DOG: '🐕',
   UNAUTHORIZED_PERSON: '🚷',
   WEAPON: '🔫',
+  ANIMAL_INTRUSION: '🐾',
+  LOITERING: '🚶',
+  CROWD_SURGE: '👥',
+  TRESPASSING: '🚫',
+  FOOD_INTRUSION: '🍕',
+  FIRE_DETECTED: '🔥',
 };
 
 /** Human-readable labels for alert types */
@@ -231,6 +250,12 @@ export const ALERT_TYPE_LABEL: Record<AlertType, string> = {
   ANIMAL_DOG: 'Dog Spotted',
   UNAUTHORIZED_PERSON: 'Unauthorized Person',
   WEAPON: 'Weapon Detected',
+  ANIMAL_INTRUSION: 'Animal Intrusion',
+  LOITERING: 'Loitering Detected',
+  CROWD_SURGE: 'Crowd Surge',
+  TRESPASSING: 'Trespassing',
+  FOOD_INTRUSION: 'Food Detected',
+  FIRE_DETECTED: 'Fire Detected',
 };
 
 /** Severity color mapping */
@@ -240,3 +265,72 @@ export const SEVERITY_COLOR: Record<Severity, string> = {
   HIGH: '#ef4444',
   CRITICAL: '#dc2626',
 };
+
+// ============================================
+// Intrusion Detection Payload Interfaces
+// ============================================
+
+/** BUZZER_CONTROL — triggers browser alarm audio */
+export interface BuzzerControlPayload {
+  cameraId: string;
+  action: 'on' | 'off';
+  tone: 'high' | 'low';
+}
+
+/** SURVEILLANCE_TOGGLE — enable/disable ML for a camera */
+export interface SurveillanceTogglePayload {
+  cameraId: string;
+  active: boolean;
+}
+
+/** HEATMAP_UPDATE — pushed after each new alert */
+export interface HeatmapUpdatePayload {
+  cameraId: string;
+  riskLevel: 'RED' | 'YELLOW' | 'GREEN';
+  alertCount: number;
+}
+
+/** WALKTHROUGH_STATUS — logs manual camera check */
+export interface WalkthroughStatusPayload {
+  cameraId: string;
+  checkedAt: number;
+}
+
+/** DETECTION_OVERLAY — live bounding boxes from ML */
+export interface DetectionOverlayPayload {
+  cameraId: string;
+  boxes: Array<{
+    id: number;
+    cls: string;
+    conf: number;
+    xyxy: [number, number, number, number];
+    model?: string;
+    zone?: string;
+    event?: string;
+  }>;
+  fps: number;
+  width: number;
+  height: number;
+}
+
+/** ZONE_INTRUSION — zone intrusion alert from ML */
+export interface ZoneIntrusionPayload {
+  cameraId: string;
+  zone: string;
+  cls: string;
+  confidence: number;
+  riskLevel: 'RED' | 'YELLOW';
+}
+
+/** ML_ALERT — full ML detection alert */
+export interface MLAlertPayload {
+  cameraId: string;
+  type: string;
+  class: string;
+  confidence: number;
+  boundingBox: { x: number; y: number; w: number; h: number };
+  zone?: string;
+  riskLevel: 'RED' | 'YELLOW';
+  timestamp: string;
+  frameSnapshot?: string;
+}

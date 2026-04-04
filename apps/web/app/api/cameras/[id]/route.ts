@@ -5,7 +5,7 @@ import { db } from '@hostel-monitor/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { cameraId: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -14,13 +14,13 @@ export async function GET(
 
   try {
     await db.connectDB();
-    const camera = await db.Camera.findById(params.cameraId);
+    const camera = await db.Camera.findById(params.id);
 
     if (!camera) {
         return NextResponse.json({ error: 'Camera not found' }, { status: 404 });
     }
 
-    const alerts = await db.Alert.find({ cameraId: params.cameraId })
+    const alerts = await db.Alert.find({ cameraId: params.id })
         .sort({ createdAt: -1 })
         .limit(20);
 
@@ -34,7 +34,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { cameraId: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
   // @ts-ignore
@@ -54,7 +54,7 @@ export async function PATCH(
 
      await db.connectDB();
      const updatedCamera = await db.Camera.findByIdAndUpdate(
-         params.cameraId,
+         params.id,
          updateData,
          { new: true }
      );

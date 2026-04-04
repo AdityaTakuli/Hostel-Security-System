@@ -531,6 +531,48 @@ export function createSignalingServer(port: number): WebSocketServer {
           case 'PING':
             ws.send(createMessage('PONG', {}, msg.id));
             break;
+
+          // ── Intrusion Detection Events ────────────────
+          case 'BUZZER_CONTROL':
+            // Broadcast alarm to all connected dashboard clients
+            console.info(`[ws] BUZZER_CONTROL: camera=${msg.payload.cameraId} action=${msg.payload.action}`);
+            broadcastToAll(createMessage('BUZZER_CONTROL', msg.payload));
+            break;
+
+          case 'SURVEILLANCE_TOGGLE':
+            // Broadcast surveillance toggle to all (including ML bridge)
+            console.info(`[ws] SURVEILLANCE_TOGGLE: camera=${msg.payload.cameraId} active=${msg.payload.active}`);
+            broadcastToAll(createMessage('SURVEILLANCE_TOGGLE', msg.payload));
+            break;
+
+          case 'HEATMAP_UPDATE':
+            // Broadcast heatmap update to all dashboard clients
+            broadcastToAll(createMessage('HEATMAP_UPDATE', msg.payload));
+            break;
+
+          case 'WALKTHROUGH_STATUS':
+            // Log and broadcast walkthrough check status
+            console.info(`[ws] WALKTHROUGH_STATUS: camera=${msg.payload.cameraId} checked`);
+            broadcastToAll(createMessage('WALKTHROUGH_STATUS', msg.payload));
+            break;
+
+          case 'DETECTION_OVERLAY':
+            // Relay live detection bounding boxes to dashboard clients
+            broadcastToAll(createMessage('DETECTION_OVERLAY', msg.payload));
+            break;
+
+          case 'ZONE_INTRUSION':
+            // Relay zone intrusion alerts
+            console.info(`[ws] ZONE_INTRUSION: camera=${msg.payload.cameraId} zone=${msg.payload.zone}`);
+            broadcastToAll(createMessage('ZONE_INTRUSION', msg.payload));
+            break;
+
+          case 'ML_ALERT':
+            // Relay ML detection alert to all dashboard clients
+            console.info(`[ws] ML_ALERT: camera=${msg.payload.cameraId} type=${msg.payload.type}`);
+            broadcastToAll(createMessage('ML_ALERT', msg.payload));
+            break;
+
           default:
             ws.send(createMessage('ERROR', { message: `Unknown message type: ${msg.type}` }, msg.id));
         }

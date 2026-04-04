@@ -5,6 +5,7 @@ import AlertProvider from '@/components/providers/AlertProvider';
 
 import AuthProvider from '@/components/providers/AuthProvider';
 import Navbar from '@/components/Navbar';
+import AlarmControl from '@/components/AlarmControl';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const syne = Syne({ subsets: ['latin'], variable: '--font-syne', display: 'swap' });
@@ -27,6 +28,7 @@ export default function RootLayout({
           <AuthProvider>
             <AlertProvider>
               <Navbar />
+              <AlarmControl />
               <div className="flex-1 w-full">
                 {children}
               </div>

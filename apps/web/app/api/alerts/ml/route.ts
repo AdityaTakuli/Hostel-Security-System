@@ -1,63 +1,73 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from 'next/server';
-import { db } from '@hostel-monitor/db';
-import Redis from 'ioredis';
-import type { AlertPayload } from '@hostel-monitor/types';
+import { NextRequest, NextResponse } from 'next/server';
+import { connectDB, Alert, EventLog, Camera } from '@hostel-monitor/db';
 
-let redis: Redis | null = null;
-if (process.env.REDIS_URL) {
-    redis = new Redis(process.env.REDIS_URL);
-}
+const ML_API_KEY = process.env.ML_API_KEY || 'hms-ml-key-2026';
 
-export async function POST(request: Request) {
-  const apiKey = request.headers.get('x-api-key');
-  if (apiKey !== process.env.ML_API_KEY) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-      const body = await request.json();
-      const { cameraId, alertType, severity, description, thumbnail } = body;
+    // Simple API key auth
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    if (apiKey !== ML_API_KEY) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
-      await db.connectDB();
-      const camera: any = await db.Camera.findById(cameraId)
-          .populate({ path: 'floor', populate: { path: 'hostel' } });
+    await connectDB();
+    const body = await req.json();
 
-      if (!camera) {
-          return NextResponse.json({ error: 'Camera not found' }, { status: 404 });
-      }
+    const {
+      cameraId,
+      type,
+      class: detectedClass,
+      confidence,
+      boundingBox,
+      zone,
+      riskLevel,
+      timestamp,
+      frameSnapshot,
+    } = body;
 
-      const alert = await db.Alert.create({
-          cameraId,
-          type: alertType,
-          severity: severity || 'HIGH',
-          description,
-          thumbnail
-      });
+    // Map risk level to severity
+    const severityMap: Record<string, string> = {
+      RED: 'CRITICAL',
+      YELLOW: 'HIGH',
+      GREEN: 'LOW',
+    };
 
-      if (redis) {
-          const payload: AlertPayload = {
-              alertId: alert.id,
-              cameraId: camera.id,
-              cameraLabel: camera.label,
-              hostelId: camera.floor.hostel.id,
-              floorNumber: camera.floor.number,
-              alertType,
-              severity: alert.severity,
-              description,
-              thumbnail,
-              posX: camera.posX,
-              posY: camera.posY
-          };
-          await redis.publish('alerts', JSON.stringify(payload));
-      } else {
-          console.warn('Redis not configured, cannot broadcast alert');
-      }
+    // Create Alert document
+    const alert = await Alert.create({
+      cameraId,
+      type: type || 'ANIMAL_INTRUSION',
+      severity: severityMap[riskLevel] || 'HIGH',
+      description: `${detectedClass} detected${zone ? ` in ${zone}` : ''} (confidence: ${(confidence * 100).toFixed(1)}%)`,
+      frameSnapshot,
+      boundingBox,
+      zone,
+      detectedClass,
+      confidence,
+      read: false,
+    });
 
-      return NextResponse.json({ ok: true, alertId: alert.id });
+    // Create EventLog entry
+    await EventLog.create({
+      cameraId,
+      type: type || 'ANIMAL_INTRUSION',
+      riskLevel: riskLevel || 'YELLOW',
+      detectedClass: detectedClass || 'unknown',
+      confidence: confidence || 0,
+      zone,
+      frameSnapshot,
+      boundingBox,
+    });
 
-  } catch (error) {
-      console.error('Error creating ML alert:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      data: { alertId: alert.id },
+    });
+  } catch (error: any) {
+    console.error('[api/alerts/ml] Error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal error' },
+      { status: 500 }
+    );
   }
 }
